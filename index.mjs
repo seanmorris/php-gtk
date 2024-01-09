@@ -5,16 +5,9 @@ const Gtk = gi.require('Gtk', '3.0');
 
 const php = new PhpNode({Gtk, gi});
 
-// Listen to STDOUT
-php.addEventListener('output', (event) => {
-	event.detail.forEach(line => console.log(line));
-});
+// Listen to STDOUT & STDERR
+php.addEventListener('output', (event) => event.detail.forEach(line => process.stdout.write(line)));
+php.addEventListener('error',  (event) => event.detail.forEach(line => process.stderr.write(line)));
 
-// Listen to STDERR
-php.addEventListener('error', (event) => {
-	event.detail.forEach(line => console.error(line));
-});
-
-php.addEventListener('ready', () => {
-	php.run(fs.readFileSync('./index.php'));
-});
+// Run PHP
+php.addEventListener('ready', () => php.run(fs.readFileSync('./index.php')));
