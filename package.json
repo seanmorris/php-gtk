@@ -1,0 +1,14 @@
+{
+  "name": "php-gtk",
+  "version": "0.0.0",
+  "description": "PHP-GTK demo using php-wasm, vrzno, and node-gtk.",
+  "main": "index.mjs",
+  "scripts": {
+    "update-php": "npx php-wasm build node mjs"
+  },
+  "author": "Sean Morris <php-wasm@seanmorr.is>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "php-wasm": "^0.0.0-esm-preview-49"
+  }
+}
