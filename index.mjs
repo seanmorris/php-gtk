@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import gi from 'node-gtk';
 const Gtk = gi.require('Gtk', '3.0');
 
-const php = new PhpNode({Gtk, gi, WebKit2});
+
+const php = new PhpNode({Gtk, gi});
 
 // Listen to STDOUT & STDERR
 php.addEventListener('output', (event) => event.detail.forEach(line => process.stdout.write(line)));

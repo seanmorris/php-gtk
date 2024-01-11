@@ -17,7 +17,7 @@ Module["ready"] = new Promise(((resolve, reject) => {
  readyPromiseReject = reject;
 }));
 
-[ "_pib_init", "_pib_destroy", "_pib_run", "_pib_exec", "_pib_refresh", "_main", "_php_embed_init", "_php_embed_shutdown", "_zend_eval_string", "_exec_callback", "_del_callback", "_vrzno_expose_inc_refcount", "_vrzno_expose_dec_refcount", "_vrzno_expose_refcount", "_vrzno_expose_efree", "_vrzno_expose_create_bool", "_vrzno_expose_create_null", "_vrzno_expose_create_undef", "_vrzno_expose_create_long", "_vrzno_expose_create_double", "_vrzno_expose_create_string", "_vrzno_expose_create_object_for_target", "_vrzno_expose_create_params", "_vrzno_expose_set_param", "_vrzno_expose_zval_is_target", "_vrzno_expose_object_keys", "_vrzno_expose_zval_dump", "_vrzno_expose_type", "_vrzno_expose_callable", "_vrzno_expose_long", "_vrzno_expose_double", "_vrzno_expose_string", "_vrzno_expose_property_type", "_vrzno_expose_property_callable", "_vrzno_expose_property_long", "_vrzno_expose_property_double", "_vrzno_expose_property_string", "_vrzno_expose_property_pointer", "_vrzno_exec_callback", "_vrzno_del_callback", "_fflush", "onRuntimeInitialized" ].forEach((prop => {
+[ "_pib_init", "_pib_destroy", "_pib_run", "_pib_exec", "_pib_refresh", "_main", "_php_embed_init", "_php_embed_shutdown", "_zend_eval_string", "_exec_callback", "_del_callback", "_vrzno_expose_inc_zrefcount", "_vrzno_expose_dec_zrefcount", "_vrzno_expose_zrefcount", "_vrzno_expose_inc_crefcount", "_vrzno_expose_dec_crefcount", "_vrzno_expose_crefcount", "_vrzno_expose_efree", "_vrzno_expose_create_bool", "_vrzno_expose_create_null", "_vrzno_expose_create_undef", "_vrzno_expose_create_long", "_vrzno_expose_create_double", "_vrzno_expose_create_string", "_vrzno_expose_create_object_for_target", "_vrzno_expose_create_params", "_vrzno_expose_set_param", "_vrzno_expose_zval_is_target", "_vrzno_expose_object_keys", "_vrzno_expose_zval_dump", "_vrzno_expose_type", "_vrzno_expose_callable", "_vrzno_expose_long", "_vrzno_expose_double", "_vrzno_expose_string", "_vrzno_expose_property_type", "_vrzno_expose_property_callable", "_vrzno_expose_property_long", "_vrzno_expose_property_double", "_vrzno_expose_property_string", "_vrzno_expose_property_pointer", "_vrzno_exec_callback", "_vrzno_del_callback", "_fflush", "onRuntimeInitialized" ].forEach((prop => {
  if (!Object.getOwnPropertyDescriptor(Module["ready"], prop)) {
   Object.defineProperty(Module["ready"], prop, {
    get: () => abort("You are getting " + prop + " on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js"),
@@ -57,14 +57,13 @@ function locateFile(path) {
  return scriptDirectory + path;
 }
 
-var read_, readAsync, readBinary, setWindowTitle;
+var read_, readAsync, readBinary;
 
 if (ENVIRONMENT_IS_NODE) {
  if (typeof process == "undefined" || !process.release || process.release.name !== "node") throw new Error("not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)");
  var nodeVersion = process.versions.node;
  var numericVersion = nodeVersion.split(".").slice(0, 3);
  numericVersion = numericVersion[0] * 1e4 + numericVersion[1] * 100 + numericVersion[2].split("-")[0] * 1;
- var minVersion = 16e4;
  if (numericVersion < 16e4) {
   throw new Error("This emscripten-generated code requires node v16.0.0 (detected v" + nodeVersion + ")");
  }
@@ -202,14 +201,6 @@ legacyModuleProp("readBinary", "readBinary");
 
 legacyModuleProp("setWindowTitle", "setWindowTitle");
 
-var IDBFS = "IDBFS is no longer included by default; build with -lidbfs.js";
-
-var PROXYFS = "PROXYFS is no longer included by default; build with -lproxyfs.js";
-
-var WORKERFS = "WORKERFS is no longer included by default; build with -lworkerfs.js";
-
-var NODEFS = "NODEFS is no longer included by default; build with -lnodefs.js";
-
 assert(!ENVIRONMENT_IS_WEB, "web environment detected but not enabled at build time.  Add 'web' to `-sENVIRONMENT` to enable.");
 
 assert(!ENVIRONMENT_IS_WORKER, "worker environment detected but not enabled at build time.  Add 'worker' to `-sENVIRONMENT` to enable.");
@@ -242,7 +233,7 @@ function assert(condition, text) {
  }
 }
 
-var HEAP, HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
+var HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
 
 function updateMemoryViews() {
  var b = wasmMemory.buffer;
@@ -306,8 +297,6 @@ var __ATINIT__ = [];
 
 var __ATMAIN__ = [];
 
-var __ATEXIT__ = [];
-
 var __ATPOSTRUN__ = [];
 
 var runtimeInitialized = false;
@@ -363,12 +352,6 @@ function addOnPreRun(cb) {
 function addOnInit(cb) {
  __ATINIT__.unshift(cb);
 }
-
-function addOnPreMain(cb) {
- __ATMAIN__.unshift(cb);
-}
-
-function addOnExit(cb) {}
 
 function addOnPostRun(cb) {
  __ATPOSTRUN__.unshift(cb);
@@ -673,12 +656,8 @@ function unexportedRuntimeSymbol(sym) {
  }
 }
 
-function dbg(text) {
- console.warn.apply(console, arguments);
-}
-
 var ASM_CONSTS = {
- 3582652: ($0, $1) => {
+ 1929652: ($0, $1) => {
   const target = Module.targets.get($0);
   const property = UTF8ToString($1);
   if (!(property in target)) {
@@ -693,7 +672,7 @@ var ASM_CONSTS = {
   }
   return 0;
  },
- 3583e3: ($0, $1, $2) => {
+ 193e4: ($0, $1, $2) => {
   const target = Module.targets.get($0);
   const property = UTF8ToString($1);
   const result = target[property];
@@ -708,26 +687,23 @@ var ASM_CONSTS = {
   }
   return 0;
  },
- 3583370: $0 => "function" === typeof Module.targets.get($0),
- 3583429: $0 => !!(Module.targets.get($0).prototype && Module.targets.get($0).prototype.constructor),
- 3583530: ($0, $1, $2) => {
+ 1930370: $0 => "function" === typeof Module.targets.get($0),
+ 1930429: $0 => !!(Module.targets.get($0).prototype && Module.targets.get($0).prototype.constructor),
+ 1930530: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
-   const newValue = $2;
   })();
  },
- 3583642: ($0, $1, $2, $3, $4) => {
+ 1930642: ($0, $1, $2, $3, $4) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    const funcPtr = $2;
-   const zvalPtr = $3;
-   const paramCount = $4;
-   target[property] = Module.callableToJs(funcPtr, null);
+   target[property] = Module.callableToJs(funcPtr);
   })();
  },
- 3583851: ($0, $1, $2) => {
+ 1930845: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
@@ -737,49 +713,49 @@ var ASM_CONSTS = {
    }
   })();
  },
- 3584058: ($0, $1) => {
+ 1931052: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    delete target[property];
   })();
  },
- 3584174: ($0, $1) => {
+ 1931168: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    target[property] = null;
   })();
  },
- 3584290: ($0, $1) => {
+ 1931284: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    target[property] = false;
   })();
  },
- 3584407: ($0, $1) => {
+ 1931401: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    target[property] = true;
   })();
  },
- 3584523: ($0, $1, $2) => {
+ 1931517: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    target[property] = $2;
   })();
  },
- 3584637: ($0, $1, $2) => {
+ 1931631: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    target[property] = $2;
   })();
  },
- 3584751: ($0, $1, $2) => {
+ 1931745: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
@@ -787,7 +763,7 @@ var ASM_CONSTS = {
    target[property] = newValue;
   })();
  },
- 3584906: ($0, $1) => {
+ 1931900: ($0, $1) => {
   let target = Module.targets.get($0);
   const property = $1;
   if (target instanceof ArrayBuffer) {
@@ -824,7 +800,7 @@ var ASM_CONSTS = {
   stringToUTF8(jsRet, strLoc, len);
   return strLoc;
  },
- 3585872: ($0, $1, $2) => {
+ 1932866: ($0, $1, $2) => {
   const target = Module.targets.get($0);
   const property = UTF8ToString($1);
   const result = target[property];
@@ -839,25 +815,22 @@ var ASM_CONSTS = {
   }
   return 0;
  },
- 3586242: $0 => "function" === typeof Module.targets.get($0),
- 3586301: $0 => !!(Module.targets.get($0).prototype && Module.targets.get($0).prototype.constructor),
- 3586402: ($0, $1, $2) => {
+ 1933236: $0 => "function" === typeof Module.targets.get($0),
+ 1933295: $0 => !!(Module.targets.get($0).prototype && Module.targets.get($0).prototype.constructor),
+ 1933396: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
-   const property = $1;
-   const newValue = $2;
   })();
  },
- 3586500: ($0, $1, $2, $3) => {
+ 1933494: ($0, $1, $2, $3) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    const funcPtr = $2;
-   const zvalPtr = $3;
    target[property] = Module.callableToJs(funcPtr);
   })();
  },
- 3586666: ($0, $1, $2) => {
+ 1933660: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
@@ -867,49 +840,49 @@ var ASM_CONSTS = {
    }
   })();
  },
- 3586859: ($0, $1) => {
+ 1933853: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    delete target[property];
   })();
  },
- 3586961: ($0, $1) => {
+ 1933955: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    target[property] = null;
   })();
  },
- 3587063: ($0, $1) => {
+ 1934057: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    target[property] = false;
   })();
  },
- 3587166: ($0, $1) => {
+ 1934160: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    target[property] = true;
   })();
  },
- 3587268: ($0, $1, $2) => {
+ 1934262: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    target[property] = $2;
   })();
  },
- 3587368: ($0, $1, $2) => {
+ 1934362: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    target[property] = $2;
   })();
  },
- 3587468: ($0, $1, $2) => {
+ 1934462: ($0, $1, $2) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
@@ -917,7 +890,7 @@ var ASM_CONSTS = {
    target[property] = newValue;
   })();
  },
- 3587609: ($0, $1, $2) => {
+ 1934603: ($0, $1, $2) => {
   const target = Module.targets.get($0);
   const property = $1;
   const check_empty = $2;
@@ -937,21 +910,21 @@ var ASM_CONSTS = {
    return !!target[property];
   }
  },
- 3588088: ($0, $1) => {
+ 1935082: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = UTF8ToString($1);
    delete target[property];
   })();
  },
- 3588204: ($0, $1) => {
+ 1935198: ($0, $1) => {
   (() => {
    const target = Module.targets.get($0);
    const property = $1;
    delete target[property];
   })();
  },
- 3588306: $0 => {
+ 1935300: $0 => {
   const target = Module.targets.get($0);
   let json;
   if (typeof target === "function") {
@@ -971,12 +944,12 @@ var ASM_CONSTS = {
   stringToUTF8(jsRet, strLoc, len);
   return strLoc;
  },
- 3588658: ($0, $1) => {
+ 1935652: ($0, $1) => {
   const target = Module.targets.get($0);
   const property = UTF8ToString($1);
   return property in target;
  },
- 3588763: $0 => {
+ 1935757: $0 => {
   const target = Module.targets.get($0);
   const name = target.constructor && target.constructor.name || "Object";
   const len = lengthBytesUTF8(name) + 1;
@@ -984,7 +957,7 @@ var ASM_CONSTS = {
   stringToUTF8(name, namePtr, len);
   return namePtr;
  },
- 3589e3: ($0, $1, $2, $3, $4) => {
+ 1935994: ($0, $1, $2, $3, $4) => {
   const target = Module.targets.get($0);
   const method_name = UTF8ToString($1);
   const argv = $2;
@@ -994,11 +967,9 @@ var ASM_CONSTS = {
   for (let i = 0; i < argc; i++) {
    args.push(Module.zvalToJS(argv + i * size));
   }
-  const jsRet = target[method_name](...args);
-  const retZval = Module.jsToZval(jsRet);
-  return retZval;
+  return Module.jsToZval(target[method_name](...args));
  },
- 3589328: ($0, $1, $2, $3) => {
+ 1936276: ($0, $1, $2, $3) => {
   const target = Module.targets.get($0);
   const argv = $1;
   const argc = $2;
@@ -1007,17 +978,16 @@ var ASM_CONSTS = {
   for (let i = 0; i < argc; i++) {
    args.push(Module.zvalToJS(argv + i * size));
   }
-  const jsRet = target(...args);
-  return Module.jsToZval(jsRet);
+  return Module.jsToZval(target(...args));
  },
- 3589580: ($0, $1) => {
+ 1936507: ($0, $1) => {
   const target = Module.targets.get($0);
   const property_name = UTF8ToString($1);
   target[property_name] = newValueJson;
   const jsRet = target[property_name];
   return Module.jsToZval(jsRet);
  },
- 3589769: ($0, $1, $2, $3) => {
+ 1936696: ($0, $1, $2, $3) => {
   const _class = Module._classes.get($0);
   const argv = $1;
   const argc = $2;
@@ -1029,14 +999,14 @@ var ASM_CONSTS = {
   const _object = new _class(...args);
   return Module.targets.add(_object);
  },
- 3590033: $0 => {
+ 1936960: $0 => {
   const jsRet = String(eval(UTF8ToString($0)));
   const len = lengthBytesUTF8(jsRet) + 1;
   const strLoc = _malloc(len);
   stringToUTF8(jsRet, strLoc, len);
   return strLoc;
  },
- 3590201: ($0, $1) => {
+ 1937128: ($0, $1) => {
   const funcName = UTF8ToString($0);
   const argJson = UTF8ToString($1);
   const func = globalThis[funcName];
@@ -1047,7 +1017,7 @@ var ASM_CONSTS = {
   stringToUTF8(jsRet, strLoc, len);
   return strLoc;
  },
- 3590512: ($0, $1) => {
+ 1937439: ($0, $1) => {
   const timeout = Number(UTF8ToString($0));
   const funcPtr = $1;
   setTimeout((() => {
@@ -1055,8 +1025,8 @@ var ASM_CONSTS = {
    Module.ccall("vrzno_del_callback", "number", [ "number" ], [ funcPtr ]);
   }), timeout);
  },
- 3590784: $0 => Module.jsToZval(Module[UTF8ToString($0)]),
- 3590838: ($0, $1, $2, $3) => {
+ 1937711: $0 => Module.jsToZval(Module[UTF8ToString($0)]),
+ 1937765: ($0, $1, $2, $3) => {
   const _class = Module.targets.get($0);
   const argv = $1;
   const argc = $2;
@@ -1065,14 +1035,13 @@ var ASM_CONSTS = {
   for (let i = 0; i < argc; i++) {
    args.push(Module.zvalToJS(argv + i * size));
   }
-  const _object = new _class(...args);
-  return Module.jsToZval(_object);
+  return Module.jsToZval(new _class(...args));
  },
- 3591098: $0 => {
+ 1938e3: $0 => {
   const name = UTF8ToString($0);
   return Module.jsToZval(import(name));
  },
- 3591171: () => {
+ 1938073: () => {
   Module.zvalMap = new WeakMap;
   Module.isTarget = Symbol("IS_TARGET");
   const FinReg = globalThis.FinalizationRegistry || class {
@@ -1087,8 +1056,13 @@ var ASM_CONSTS = {
     return this.val;
    }
   };
-  Module.fRegistry = Module.fRegistry || new FinReg((zvalPtr => {
-   Module.ccall("vrzno_expose_dec_refcount", "number", [ "number" ], [ zvalPtr ]);
+  Module.zfRegistry = Module.zfRegistry || new FinReg((zvalPtr => {
+   console.log("Garbage collecting zVal @" + zvalPtr);
+   Module.ccall("vrzno_expose_dec_zrefcount", "number", [ "number" ], [ zvalPtr ]);
+  }));
+  Module.cfRegistry = Module.cfRegistry || new FinReg((funcPtr => {
+   console.log("Garbage collecting callable @" + funcPtr);
+   Module.ccall("vrzno_expose_dec_crefcount", "number", [ "number" ], [ funcPtr ]);
   }));
   Module.bufferMaps = new WeakMap;
   Module.WeakerMap = Module.WeakerMap || class WeakerMap {
@@ -1235,11 +1209,6 @@ var ASM_CONSTS = {
    if (proxy && [ "function", "object" ].includes(typeof proxy)) {
     Module.zvalMap.set(proxy, zvalPtr);
    }
-   if (!Module.targets.has(proxy)) {
-    Module.targets.add(proxy);
-    Module.ccall("vrzno_expose_inc_refcount", "number", [ "number" ], [ zvalPtr ]);
-    Module.fRegistry.register(proxy, zvalPtr, proxy);
-   }
    return proxy;
   };
   Module.callableToJs = Module.callableToJs || (funcPtr => {
@@ -1248,20 +1217,33 @@ var ASM_CONSTS = {
     if (args.length) {
      paramsPtr = Module.ccall("vrzno_expose_create_params", "number", [ "number", "number" ], [ args.length ]);
      paramPtrs = args.map((a => Module.jsToZval(a)));
-     paramPtrs.forEach(((paramPtr, i) => {
-      Module.ccall("vrzno_expose_set_param", "number", [ "number", "number", "number" ], [ paramsPtr, i, paramPtr ]);
+     paramPtrs.forEach(((paramPtr, index) => {
+      Module.ccall("vrzno_expose_set_param", "number", [ "number", "number", "number" ], [ paramsPtr, index, paramPtr ]);
      }));
     }
     const zvalPtr = Module.ccall("vrzno_exec_callback", "number", [ "number", "number", "number" ], [ funcPtr, paramsPtr, args.length ]);
     if (args.length) {
-     paramPtrs.forEach(((p, i) => {}));
-     Module.ccall("vrzno_expose_efree", "number", [ "number", "number" ], [ paramsPtr, false ]);
+     for (const index in paramPtrs) {
+      const paramPtr = paramPtrs[index];
+      if (args[index] && [ "function", "object" ].includes(typeof args[index])) {
+       Module.zfRegistry.register(args[index], paramPtr, args[index]);
+      }
+     }
+     Module.ccall("vrzno_expose_efree", "number", [ "number" ], [ paramsPtr ]);
     }
     if (zvalPtr) {
      return Module.zvalToJS(zvalPtr);
     }
    };
-   Module.callables.set(funcPtr, wrapped);
+   Object.defineProperty(wrapped, "name", {
+    value: `PHP_[${funcPtr}]`,
+    configurable: true
+   });
+   if (!Module.callables.has(wrapped)) {
+    Module.callables.add(wrapped);
+    Module.ccall("vrzno_expose_inc_crefcount", "number", [ "number" ], [ funcPtr ]);
+    Module.cfRegistry.register(wrapped, funcPtr, wrapped);
+   }
    return wrapped;
   });
   Module.zvalToJS = Module.zvalToJS || (zvalPtr => {
@@ -1272,7 +1254,6 @@ var ASM_CONSTS = {
    const IS_LONG = 4;
    const IS_DOUBLE = 5;
    const IS_STRING = 6;
-   const IS_ARRAY = 7;
    const IS_OBJECT = 8;
    const callable = Module.ccall("vrzno_expose_callable", "number", [ "number" ], [ zvalPtr ]);
    let valPtr;
@@ -1281,8 +1262,8 @@ var ASM_CONSTS = {
     if (!Module.targets.has(wrapped)) {
      Module.targets.add(wrapped);
      Module.zvalMap.set(wrapped, zvalPtr);
-     Module.ccall("vrzno_expose_inc_refcount", "number", [ "number" ], [ zvalPtr ]);
-     Module.fRegistry.register(wrapped, zvalPtr, wrapped);
+     Module.ccall("vrzno_expose_inc_zrefcount", "number", [ "number" ], [ zvalPtr ]);
+     Module.zfRegistry.register(wrapped, zvalPtr, wrapped);
     }
     return wrapped;
    }
@@ -1325,9 +1306,14 @@ var ASM_CONSTS = {
     break;
 
    case IS_OBJECT:
-    const proxy = Module.marshalObject(zvalPtr);
-    if (Module.targets.hasId(zvalPtr)) {}
-    return proxy;
+    const wrapped = Module.marshalObject(zvalPtr);
+    if (!Module.targets.has(wrapped)) {
+     Module.targets.add(wrapped);
+     Module.zvalMap.set(wrapped, zvalPtr);
+     Module.ccall("vrzno_expose_inc_zrefcount", "number", [ "number" ], [ zvalPtr ]);
+     Module.zfRegistry.register(wrapped, zvalPtr, wrapped);
+    }
+    return wrapped;
     break;
 
    default:
@@ -1359,10 +1345,6 @@ var ASM_CONSTS = {
     }
     zvalPtr = Module.ccall("vrzno_expose_create_object_for_target", "number", [ "number", "number", "number" ], [ index, typeof value === "function", !!(value.prototype && value.prototype.constructor) ]);
     Module.zvalMap.set(value, zvalPtr);
-    if (!existed) {
-     Module.ccall("vrzno_expose_inc_refcount", "number", [ "number" ], [ zvalPtr ]);
-     Module.fRegistry.register(value, zvalPtr, value);
-    }
    } else if (typeof value === "number") {
     if (Number.isInteger(value)) {
      zvalPtr = Module.ccall("vrzno_expose_create_long", "number", [ "number" ], [ value ]);
@@ -1473,51 +1455,42 @@ var ASM_CONSTS = {
   };
   Module.classes = Module.classes || new WeakMap;
   Module._classes = Module._classes || new Module.WeakerMap;
-  Module.callables = Module.callables || new Module.WeakerMap;
+  Module.callables = Module.callables || new WeakSet;
   Module.targets = Module.targets || new Module.UniqueIndex;
   Module.targets.add(globalThis);
   Module.PdoParams = new WeakMap;
   Module.PdoD1Driver = Module.PdoD1Driver || class PdoD1Driver {
    prepare(db, query) {
-    console.log("prepare", {
-     db: db,
-     query: query
-    });
     return db.prepare(query);
    }
-   doer(db, query) {
-    console.log("doer", {
-     db: db,
-     query: query
-    });
-   }
+   doer(db, query) {}
   };
   Module.pdoDriver = Module.pdoDriver || new Module.PdoD1Driver;
  },
- 3601847: $0 => {
+ 1949215: $0 => {
   const target = Module.targets.get($0);
   return Module.classes.get(target);
  },
- 3601925: ($0, $1) => {
+ 1949293: ($0, $1) => {
   const target = Module.targets.get($0);
   Module.classes.set(target, $1);
   Module._classes.set($1, target);
  },
- 3602033: $0 => {
+ 1949401: $0 => {
   const results = Module.targets.get($0);
   if (results) {
    return results.length;
   }
   return 0;
  },
- 3602126: $0 => {
+ 1949494: $0 => {
   const results = Module.targets.get($0);
   if (results.length) {
    return Object.keys(results[0]).length;
   }
   return 0;
  },
- 3602242: ($0, $1) => {
+ 1949610: ($0, $1) => {
   const targetId = $0;
   const target = Module.targets.get(targetId);
   const current = $1;
@@ -1526,7 +1499,7 @@ var ASM_CONSTS = {
   }
   return Module.jsToZval(target[current]);
  },
- 3602419: ($0, $1) => {
+ 1949787: ($0, $1) => {
   const results = Module.targets.get($0);
   if (results.length) {
    const jsRet = Object.keys(results[0])[$1];
@@ -1537,10 +1510,9 @@ var ASM_CONSTS = {
   }
   return 0;
  },
- 3602657: ($0, $1, $2) => {
+ 1950025: ($0, $1, $2) => {
   const results = Module.targets.get($0);
   const current = -1 + $1;
-  const colno = $2;
   if (current >= results.length) {
    return null;
   }
@@ -1549,7 +1521,7 @@ var ASM_CONSTS = {
   const zval = Module.jsToZval(result[key]);
   return zval;
  },
- 3602917: ($0, $1) => {
+ 1950285: ($0, $1) => {
   const statement = Module.targets.get($0);
   const paramVal = Module.zvalToJS($1);
   if (!Module.PdoParams.has(statement)) {
@@ -1558,19 +1530,19 @@ var ASM_CONSTS = {
   const paramList = Module.PdoParams.get(statement);
   paramList.push(paramVal);
  },
- 3603156: ($0, $1, $2) => {
+ 1950524: ($0, $1, $2) => {
   console.log("GET ATTR", $0, $1, $2);
  },
- 3603197: ($0, $1, $2) => {
+ 1950565: ($0, $1, $2) => {
   console.log("COL META", $0, $1, $2);
  },
- 3603238: ($0, $1, $2) => {
+ 1950606: ($0, $1, $2) => {
   console.log("CLOSE", $0, $1, $2);
  },
- 3603276: $0 => {
+ 1950644: $0 => {
   console.log("CLOSE", $0);
  },
- 3603306: ($0, $1) => {
+ 1950674: ($0, $1) => {
   const target = Module.targets.get($0);
   const query = UTF8ToString($1);
   if (Module.pdoDriver && Module.pdoDriver.prepare) {
@@ -1580,7 +1552,7 @@ var ASM_CONSTS = {
   }
   return null;
  },
- 3603558: ($0, $1) => {
+ 1950926: ($0, $1) => {
   console.log("DO", $0, UTF8ToString($1));
   const target = Module.targets.get($0);
   const query = UTF8ToString($1);
@@ -1589,41 +1561,41 @@ var ASM_CONSTS = {
   }
   return 1;
  },
- 3603779: $0 => {
+ 1951147: $0 => {
   console.log("BEGIN TXN", $0);
   return true;
  },
- 3603826: $0 => {
+ 1951194: $0 => {
   console.log("COMMIT TXN", $0);
   return true;
  },
- 3603874: $0 => {
+ 1951242: $0 => {
   console.log("ROLLBACK TXN", $0);
   return true;
  },
- 3603924: ($0, $1, $2) => {
+ 1951292: ($0, $1, $2) => {
   console.log("SET ATTR", $0, $1, $2);
   return true;
  },
- 3603978: ($0, $1) => {
+ 1951346: ($0, $1) => {
   console.log("LAST INSERT ID", $0, UTF8ToString($1));
   return 0;
  },
- 3604045: ($0, $1, $2) => {
+ 1951413: ($0, $1, $2) => {
   console.log("FETCH ERROR FUNC", $0, $1, $2);
  },
- 3604094: ($0, $1, $2) => {
+ 1951462: ($0, $1, $2) => {
   console.log("GET ATTR", $0, $1, $2);
   return 0;
  },
- 3604145: $0 => {
+ 1951513: $0 => {
   console.log("SHUTDOWN", $0);
  },
- 3604178: ($0, $1) => {
+ 1951546: ($0, $1) => {
   console.log("GET GC", $0, $1);
  },
- 3604213: () => Module.targets.getId(globalThis),
- 3604258: ($0, $1) => {
+ 1951581: () => Module.targets.getId(globalThis),
+ 1951626: ($0, $1) => {
   let target = Module.targets.get($0);
   const property = $1;
   if (target instanceof ArrayBuffer) {
@@ -1639,7 +1611,7 @@ var ASM_CONSTS = {
   }
   return 0;
  },
- 3604621: ($0, $1) => {
+ 1951989: ($0, $1) => {
   let target = Module.targets.get($0);
   const property = $1;
   if (target instanceof ArrayBuffer) {
@@ -1725,45 +1697,6 @@ var ptrToString = ptr => {
  assert(typeof ptr === "number");
  return "0x" + ptr.toString(16).padStart(8, "0");
 };
-
-function setValue(ptr, value, type = "i8") {
- if (type.endsWith("*")) type = "*";
- switch (type) {
- case "i1":
-  HEAP8[ptr >>> 0] = value;
-  break;
-
- case "i8":
-  HEAP8[ptr >>> 0] = value;
-  break;
-
- case "i16":
-  HEAP16[ptr >>> 1] = value;
-  break;
-
- case "i32":
-  HEAP32[ptr >>> 2] = value;
-  break;
-
- case "i64":
-  abort("to do setValue(i64) use WASM_BIGINT");
-
- case "float":
-  HEAPF32[ptr >>> 2] = value;
-  break;
-
- case "double":
-  HEAPF64[ptr >>> 3] = value;
-  break;
-
- case "*":
-  HEAPU32[ptr >>> 2] = value;
-  break;
-
- default:
-  abort(`invalid type for setValue: ${type}`);
- }
-}
 
 var warnOnce = text => {
  if (!warnOnce.shown) warnOnce.shown = {};
@@ -4815,20 +4748,6 @@ var setErrNo = value => {
  return value;
 };
 
-var Sockets = {
- BUFFER_SIZE: 10240,
- MAX_BUFFER_SIZE: 10485760,
- nextFd: 1,
- fds: {},
- nextport: 1,
- maxport: 65535,
- peer: null,
- connections: {},
- portmap: {},
- localAddr: 4261412874,
- addrPool: [ 33554442, 50331658, 67108874, 83886090, 100663306, 117440522, 134217738, 150994954, 167772170, 184549386, 201326602, 218103818, 234881034 ]
-};
-
 var inetPton4 = str => {
  var b = str.split(".");
  for (var i = 0; i < 4; i++) {
@@ -4843,7 +4762,7 @@ var jstoi_q = str => parseInt(str);
 
 var inetPton6 = str => {
  var words;
- var w, offset, z, i;
+ var w, offset, z;
  var valid6regx = /^((?=.*::)(?!.*::.+::)(::)?([\dA-F]{1,4}:(:|\b)|){5}|([\dA-F]{1,4}:){6})((([\dA-F]{1,4}((?!\3)::|:\b|$))|(?!\2\3)){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})$/i;
  var parts = [];
  if (!valid6regx.test(str)) {
@@ -5177,41 +5096,6 @@ function ___syscall_faccessat(dirfd, path, amode, flags) {
   if (perms && FS.nodePermissions(node, perms)) {
    return -2;
   }
-  return 0;
- } catch (e) {
-  if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
-  return -e.errno;
- }
-}
-
-function ___syscall_fallocate(fd, mode, offset_low, offset_high, len_low, len_high) {
- var offset = convertI32PairToI53Checked(offset_low, offset_high);
- var len = convertI32PairToI53Checked(len_low, len_high);
- try {
-  if (isNaN(offset)) return 61;
-  var stream = SYSCALLS.getStreamFromFD(fd);
-  assert(mode === 0);
-  FS.allocate(stream, offset, len);
-  return 0;
- } catch (e) {
-  if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
-  return -e.errno;
- }
-}
-
-function ___syscall_fchmod(fd, mode) {
- try {
-  FS.fchmod(fd, mode);
-  return 0;
- } catch (e) {
-  if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
-  return -e.errno;
- }
-}
-
-function ___syscall_fchown32(fd, owner, group) {
- try {
-  FS.fchown(fd, owner, group);
   return 0;
  } catch (e) {
   if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
@@ -6611,15 +6495,13 @@ function _getaddrinfo(node, service, hint, out) {
  service >>>= 0;
  hint >>>= 0;
  out >>>= 0;
- var addrs = [];
- var canon = null;
  var addr = 0;
  var port = 0;
  var flags = 0;
  var family = 0;
  var type = 0;
  var proto = 0;
- var ai, last;
+ var ai;
  function allocaddrinfo(family, type, proto, canon, addr, port) {
   var sa, salen, ai;
   var errno;
@@ -7338,42 +7220,12 @@ function _swapcontext() {
 
 var wasmTableMirror = [];
 
-var getWasmTableEntry = funcPtr => {
- var func = wasmTableMirror[funcPtr];
- if (!func) {
-  if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
-  wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
- }
- assert(wasmTable.get(funcPtr) == func, "JavaScript-side Wasm function table mirror is out of date!");
- return func;
-};
-
 function runAndAbortIfError(func) {
  try {
   return func();
  } catch (e) {
   abort(e);
  }
-}
-
-function sigToWasmTypes(sig) {
- assert(!sig.includes("j"), "i64 not permitted in function signatures when WASM_BIGINT is disabled");
- var typeNames = {
-  "i": "i32",
-  "j": "i64",
-  "f": "f32",
-  "d": "f64",
-  "p": "i32"
- };
- var type = {
-  parameters: [],
-  results: sig[0] == "v" ? [] : [ typeNames[sig[0]] ]
- };
- for (var i = 1; i < sig.length; ++i) {
-  assert(sig[i] in typeNames, "invalid signature char: " + sig[i]);
-  type.parameters.push(typeNames[sig[i]]);
- }
- return type;
 }
 
 var runtimeKeepalivePush = () => {
@@ -7849,9 +7701,6 @@ var wasmImports = {
  __syscall_dup: ___syscall_dup,
  __syscall_dup3: ___syscall_dup3,
  __syscall_faccessat: ___syscall_faccessat,
- __syscall_fallocate: ___syscall_fallocate,
- __syscall_fchmod: ___syscall_fchmod,
- __syscall_fchown32: ___syscall_fchown32,
  __syscall_fchownat: ___syscall_fchownat,
  __syscall_fcntl64: ___syscall_fcntl64,
  __syscall_fdatasync: ___syscall_fdatasync,
@@ -7946,11 +7795,17 @@ var asm = createWasm();
 
 var ___wasm_call_ctors = createExportWrapper("__wasm_call_ctors");
 
-var _vrzno_expose_inc_refcount = Module["_vrzno_expose_inc_refcount"] = createExportWrapper("vrzno_expose_inc_refcount");
+var _vrzno_expose_inc_zrefcount = Module["_vrzno_expose_inc_zrefcount"] = createExportWrapper("vrzno_expose_inc_zrefcount");
 
-var _vrzno_expose_dec_refcount = Module["_vrzno_expose_dec_refcount"] = createExportWrapper("vrzno_expose_dec_refcount");
+var _vrzno_expose_dec_zrefcount = Module["_vrzno_expose_dec_zrefcount"] = createExportWrapper("vrzno_expose_dec_zrefcount");
 
-var _vrzno_expose_refcount = Module["_vrzno_expose_refcount"] = createExportWrapper("vrzno_expose_refcount");
+var _vrzno_expose_zrefcount = Module["_vrzno_expose_zrefcount"] = createExportWrapper("vrzno_expose_zrefcount");
+
+var _vrzno_expose_inc_crefcount = Module["_vrzno_expose_inc_crefcount"] = createExportWrapper("vrzno_expose_inc_crefcount");
+
+var _vrzno_expose_dec_crefcount = Module["_vrzno_expose_dec_crefcount"] = createExportWrapper("vrzno_expose_dec_crefcount");
+
+var _vrzno_expose_crefcount = Module["_vrzno_expose_crefcount"] = createExportWrapper("vrzno_expose_crefcount");
 
 var _vrzno_expose_efree = Module["_vrzno_expose_efree"] = createExportWrapper("vrzno_expose_efree");
 
@@ -8116,75 +7971,13 @@ var dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = createExportWrapper("dynCa
 
 var dynCall_iiiiiiiiii = Module["dynCall_iiiiiiiiii"] = createExportWrapper("dynCall_iiiiiiiiii");
 
-var dynCall_viiiiiiiii = Module["dynCall_viiiiiiiii"] = createExportWrapper("dynCall_viiiiiiiii");
-
-var dynCall_viiiiiii = Module["dynCall_viiiiiii"] = createExportWrapper("dynCall_viiiiiii");
-
-var dynCall_viiiiii = Module["dynCall_viiiiii"] = createExportWrapper("dynCall_viiiiii");
-
-var dynCall_ij = Module["dynCall_ij"] = createExportWrapper("dynCall_ij");
-
-var dynCall_iiiij = Module["dynCall_iiiij"] = createExportWrapper("dynCall_iiiij");
-
-var dynCall_vijii = Module["dynCall_vijii"] = createExportWrapper("dynCall_vijii");
-
-var dynCall_iijj = Module["dynCall_iijj"] = createExportWrapper("dynCall_iijj");
-
 var dynCall_iij = Module["dynCall_iij"] = createExportWrapper("dynCall_iij");
-
-var dynCall_iijii = Module["dynCall_iijii"] = createExportWrapper("dynCall_iijii");
-
-var dynCall_iiji = Module["dynCall_iiji"] = createExportWrapper("dynCall_iiji");
-
-var dynCall_iiiiiij = Module["dynCall_iiiiiij"] = createExportWrapper("dynCall_iiiiiij");
-
-var dynCall_iiid = Module["dynCall_iiid"] = createExportWrapper("dynCall_iiid");
-
-var dynCall_iiij = Module["dynCall_iiij"] = createExportWrapper("dynCall_iiij");
-
-var dynCall_dii = Module["dynCall_dii"] = createExportWrapper("dynCall_dii");
-
-var dynCall_jii = Module["dynCall_jii"] = createExportWrapper("dynCall_jii");
-
-var dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = createExportWrapper("dynCall_iiiiiiiii");
-
-var dynCall_vid = Module["dynCall_vid"] = createExportWrapper("dynCall_vid");
-
-var dynCall_di = Module["dynCall_di"] = createExportWrapper("dynCall_di");
-
-var dynCall_iiiiijii = Module["dynCall_iiiiijii"] = createExportWrapper("dynCall_iiiiijii");
-
-var dynCall_j = Module["dynCall_j"] = createExportWrapper("dynCall_j");
-
-var dynCall_jj = Module["dynCall_jj"] = createExportWrapper("dynCall_jj");
-
-var dynCall_jiij = Module["dynCall_jiij"] = createExportWrapper("dynCall_jiij");
-
-var dynCall_iiiiji = Module["dynCall_iiiiji"] = createExportWrapper("dynCall_iiiiji");
-
-var dynCall_iiiijii = Module["dynCall_iiiijii"] = createExportWrapper("dynCall_iiiijii");
-
-var dynCall_viiji = Module["dynCall_viiji"] = createExportWrapper("dynCall_viiji");
-
-var dynCall_viijii = Module["dynCall_viijii"] = createExportWrapper("dynCall_viijii");
-
-var dynCall_iiiiiiiiiii = Module["dynCall_iiiiiiiiiii"] = createExportWrapper("dynCall_iiiiiiiiiii");
-
-var dynCall_iiiijji = Module["dynCall_iiiijji"] = createExportWrapper("dynCall_iiiijji");
-
-var dynCall_dd = Module["dynCall_dd"] = createExportWrapper("dynCall_dd");
-
-var dynCall_ddd = Module["dynCall_ddd"] = createExportWrapper("dynCall_ddd");
 
 var dynCall_jiijii = Module["dynCall_jiijii"] = createExportWrapper("dynCall_jiijii");
 
 var dynCall_viiijii = Module["dynCall_viiijii"] = createExportWrapper("dynCall_viiijii");
 
-var dynCall_jiiiji = Module["dynCall_jiiiji"] = createExportWrapper("dynCall_jiiiji");
-
-var dynCall_jiiji = Module["dynCall_jiiji"] = createExportWrapper("dynCall_jiiji");
-
-var dynCall_iiiji = Module["dynCall_iiiji"] = createExportWrapper("dynCall_iiiji");
+var dynCall_viiiiii = Module["dynCall_viiiiii"] = createExportWrapper("dynCall_viiiiii");
 
 var dynCall_viidii = Module["dynCall_viidii"] = createExportWrapper("dynCall_viidii");
 
@@ -8200,9 +7993,9 @@ var _asyncify_start_rewind = createExportWrapper("asyncify_start_rewind");
 
 var _asyncify_stop_rewind = createExportWrapper("asyncify_stop_rewind");
 
-var ___start_em_js = Module["___start_em_js"] = 3604897;
+var ___start_em_js = Module["___start_em_js"] = 1952265;
 
-var ___stop_em_js = Module["___stop_em_js"] = 3605539;
+var ___stop_em_js = Module["___stop_em_js"] = 1952907;
 
 function invoke_iiii(index, a1, a2, a3) {
  var sp = stackSave();
@@ -8424,13 +8217,6 @@ function intArrayFromBase64(s) {
  }
 }
 
-function tryParseAsDataURI(filename) {
- if (!isDataURI(filename)) {
-  return;
- }
- return intArrayFromBase64(filename.slice(dataURIPrefix.length));
-}
-
 Module["addRunDependency"] = addRunDependency;
 
 Module["removeRunDependency"] = removeRunDependency;
@@ -8447,6 +8233,8 @@ Module["FS_unlink"] = FS.unlink;
 
 Module["ccall"] = ccall;
 
+Module["getValue"] = getValue;
+
 Module["UTF8ToString"] = UTF8ToString;
 
 Module["lengthBytesUTF8"] = lengthBytesUTF8;
@@ -8457,7 +8245,7 @@ var missingLibrarySymbols = [ "writeI53ToI64", "writeI53ToI64Clamped", "writeI53
 
 missingLibrarySymbols.forEach(missingLibrarySymbol);
 
-var unexportedSymbols = [ "run", "addOnPreRun", "addOnInit", "addOnPreMain", "addOnExit", "addOnPostRun", "FS_createFolder", "FS_createLink", "out", "err", "callMain", "abort", "keepRuntimeAlive", "wasmMemory", "stackAlloc", "stackSave", "stackRestore", "getTempRet0", "setTempRet0", "writeStackCookie", "checkStackCookie", "readI53FromI64", "convertI32PairToI53Checked", "ptrToString", "zeroMemory", "exitJS", "getHeapMax", "growMemory", "ENV", "MONTH_DAYS_REGULAR", "MONTH_DAYS_LEAP", "MONTH_DAYS_REGULAR_CUMULATIVE", "MONTH_DAYS_LEAP_CUMULATIVE", "isLeapYear", "ydayFromDate", "arraySum", "addDays", "ERRNO_CODES", "ERRNO_MESSAGES", "setErrNo", "inetPton4", "inetNtop4", "inetPton6", "inetNtop6", "readSockaddr", "writeSockaddr", "DNS", "getHostByName", "Protocols", "Sockets", "initRandomFill", "randomFill", "timers", "warnOnce", "UNWIND_CACHE", "readEmAsmArgsArray", "readEmAsmArgs", "runEmAsmFunction", "jstoi_q", "getExecutableName", "handleException", "runtimeKeepalivePush", "runtimeKeepalivePop", "callUserCallback", "maybeExit", "asyncLoad", "alignMemory", "mmapAlloc", "getCFunc", "sigToWasmTypes", "freeTableIndexes", "functionsInTableMap", "setValue", "getValue", "PATH", "PATH_FS", "UTF8Decoder", "UTF8ArrayToString", "stringToUTF8Array", "stringToUTF8", "intArrayFromString", "stringToAscii", "UTF16Decoder", "stringToNewUTF8", "stringToUTF8OnStack", "writeArrayToMemory", "JSEvents", "specialHTMLTargets", "currentFullscreenStrategy", "restoreOldWindowedStyle", "demangle", "demangleAll", "ExitStatus", "getEnvStrings", "doReadv", "doWritev", "promiseMap", "uncaughtExceptionCount", "exceptionLast", "exceptionCaught", "Browser", "wget", "SYSCALLS", "getSocketFromFD", "getSocketAddress", "preloadPlugins", "FS_modeStringToFlags", "FS_getMode", "FS_stdin_getChar_buffer", "FS_stdin_getChar", "FS", "MEMFS", "TTY", "PIPEFS", "SOCKFS", "tempFixedLengthArray", "miniTempWebGLFloatBuffers", "miniTempWebGLIntBuffers", "GL", "emscripten_webgl_power_preferences", "AL", "GLUT", "EGL", "GLEW", "IDBStore", "runAndAbortIfError", "Asyncify", "Fibers", "SDL", "SDL_gfx", "GLFW", "allocateUTF8", "allocateUTF8OnStack" ];
+var unexportedSymbols = [ "run", "addOnPreRun", "addOnInit", "addOnPreMain", "addOnExit", "addOnPostRun", "FS_createFolder", "FS_createLink", "out", "err", "callMain", "abort", "keepRuntimeAlive", "wasmMemory", "stackAlloc", "stackSave", "stackRestore", "getTempRet0", "setTempRet0", "writeStackCookie", "checkStackCookie", "readI53FromI64", "convertI32PairToI53Checked", "ptrToString", "zeroMemory", "exitJS", "getHeapMax", "growMemory", "ENV", "MONTH_DAYS_REGULAR", "MONTH_DAYS_LEAP", "MONTH_DAYS_REGULAR_CUMULATIVE", "MONTH_DAYS_LEAP_CUMULATIVE", "isLeapYear", "ydayFromDate", "arraySum", "addDays", "ERRNO_CODES", "ERRNO_MESSAGES", "setErrNo", "inetPton4", "inetNtop4", "inetPton6", "inetNtop6", "readSockaddr", "writeSockaddr", "DNS", "getHostByName", "Protocols", "Sockets", "initRandomFill", "randomFill", "timers", "warnOnce", "UNWIND_CACHE", "readEmAsmArgsArray", "readEmAsmArgs", "runEmAsmFunction", "jstoi_q", "getExecutableName", "handleException", "runtimeKeepalivePush", "runtimeKeepalivePop", "callUserCallback", "maybeExit", "asyncLoad", "alignMemory", "mmapAlloc", "getCFunc", "sigToWasmTypes", "freeTableIndexes", "functionsInTableMap", "setValue", "PATH", "PATH_FS", "UTF8Decoder", "UTF8ArrayToString", "stringToUTF8Array", "stringToUTF8", "intArrayFromString", "stringToAscii", "UTF16Decoder", "stringToNewUTF8", "stringToUTF8OnStack", "writeArrayToMemory", "JSEvents", "specialHTMLTargets", "currentFullscreenStrategy", "restoreOldWindowedStyle", "demangle", "demangleAll", "ExitStatus", "getEnvStrings", "doReadv", "doWritev", "promiseMap", "uncaughtExceptionCount", "exceptionLast", "exceptionCaught", "Browser", "wget", "SYSCALLS", "getSocketFromFD", "getSocketAddress", "preloadPlugins", "FS_modeStringToFlags", "FS_getMode", "FS_stdin_getChar_buffer", "FS_stdin_getChar", "FS", "MEMFS", "TTY", "PIPEFS", "SOCKFS", "tempFixedLengthArray", "miniTempWebGLFloatBuffers", "miniTempWebGLIntBuffers", "GL", "emscripten_webgl_power_preferences", "AL", "GLUT", "EGL", "GLEW", "IDBStore", "runAndAbortIfError", "Asyncify", "Fibers", "SDL", "SDL_gfx", "GLFW", "allocateUTF8", "allocateUTF8OnStack" ];
 
 unexportedSymbols.forEach(unexportedRuntimeSymbol);
 

@@ -1,6 +1,8 @@
 <?php
-$gi  = vrzno_env('gi');
-$Gtk = vrzno_env('Gtk');
+global $gi, $Gtk, $WebKit2;
+
+$gi      = vrzno_env('gi');
+$Gtk     = vrzno_env('Gtk');
 $WebKit2 = vrzno_env('WebKit2');
 
 function url($href)
@@ -11,7 +13,6 @@ function url($href)
 function load($href, $webView, $urlBar)
 {
     $url = url($href);
-    var_dump('Loading', $url);
     $webView->loadUri($url);
     $urlBar->setText($url);
 }
@@ -19,9 +20,9 @@ function load($href, $webView, $urlBar)
 $gi->startLoop();
 $Gtk->init();
 
-$window  = new $Gtk->Window([ 'type' => $Gtk->WindowType->TOPLEVEL ]);
-$webView = new $WebKit2->WebView();
+$window  = new $Gtk->Window;
 $toolbar = new $Gtk->Toolbar;
+$webView = new $WebKit2->WebView();
 
 $buttonBack    = $Gtk->ToolButton->newFromStock($Gtk->STOCK_GO_BACK);
 $buttonForward = $Gtk->ToolButton->newFromStock($Gtk->STOCK_GO_FORWARD);
@@ -55,12 +56,17 @@ $gtkSettings->gtkThemeName = 'Adwaita';
 
 $webSettings = $webView->getSettings();
 $webSettings->enableDeveloperExtras = true;
+$webSettings->enableCaretBrowsing = true;
 
 $buttonBack->on('clicked', fn() => $webView->goBack());
 $buttonForward->on('clicked', fn() => $webView->goForward());
 $buttonRefresh->on('clicked', fn() => $webView->reload());
+
 $urlBar->on('activate', fn() => load($urlBar->getText(), $webView, $urlBar));
+$webView->on('load-changed', fn() => $urlBar->setText($webView->getUri()));
 $window->on('show', fn() => load('https://php-cloud.pages.dev', $webView, $urlBar));
+
+$window->on('delete-event', fn() => false);
 $window->on('destroy', fn() => $Gtk->mainQuit());
 
 $window->setTitle('PHP-GTK Browser');
@@ -70,3 +76,27 @@ $window->setPosition($Gtk->WindowPosition->CENTER);
 $window->showAll();
 $Gtk->main();
 
+$gi            = NULL;
+$Gtk           = NULL;
+$WebKit2       = NULL;
+
+$window        = NULL;
+$toolbar       = NULL;
+$webView       = NULL;
+
+$buttonBack    = NULL;
+$buttonForward = NULL;
+$buttonRefresh = NULL;
+
+$urlBar        = NULL;
+$scrolledWindow = NULL;
+
+$hBox          = NULL;
+$vBox          = NULL;
+
+$gtkSettings   = NULL;
+$webSettings   = NULL;
+
+gc_collect_cycles();
+
+echo "Done.\n";
