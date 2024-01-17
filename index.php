@@ -9,6 +9,7 @@ $Gtk->init();
 
 // Set up the window
 $win = new $Gtk->Window;
+
 $win->setTitle('PHP-GTK 2024');
 $win->setDefaultSize(320, 200);
 $win->setPosition($Gtk->WindowPosition->CENTER);

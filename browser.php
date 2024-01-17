@@ -1,4 +1,5 @@
 <?php
+// Translated from https://github.com/romgrk/node-gtk/blob/master/examples/browser.js
 global $gi, $Gtk, $WebKit2;
 
 $gi      = vrzno_env('gi');
@@ -64,39 +65,17 @@ $buttonRefresh->on('clicked', fn() => $webView->reload());
 
 $urlBar->on('activate', fn() => load($urlBar->getText(), $webView, $urlBar));
 $webView->on('load-changed', fn() => $urlBar->setText($webView->getUri()));
-$window->on('show', fn() => load('https://php-cloud.pages.dev', $webView, $urlBar));
 
-$window->on('delete-event', fn() => false);
 $window->on('destroy', fn() => $Gtk->mainQuit());
+$window->on('delete-event', fn() => false);
 
 $window->setTitle('PHP-GTK Browser');
 
 $window->setPosition($Gtk->WindowPosition->CENTER);
 
+load('https://php-cloud.pages.dev', $webView, $urlBar);
+
 $window->showAll();
 $Gtk->main();
-
-$gi            = NULL;
-$Gtk           = NULL;
-$WebKit2       = NULL;
-
-$window        = NULL;
-$toolbar       = NULL;
-$webView       = NULL;
-
-$buttonBack    = NULL;
-$buttonForward = NULL;
-$buttonRefresh = NULL;
-
-$urlBar        = NULL;
-$scrolledWindow = NULL;
-
-$hBox          = NULL;
-$vBox          = NULL;
-
-$gtkSettings   = NULL;
-$webSettings   = NULL;
-
-gc_collect_cycles();
 
 echo "Done.\n";
