@@ -7,6 +7,7 @@ This project exposes [node-gtk](https://github.com/romgrk/node-gtk) to [php-wasm
 ```bash
 git clone git@github.com:seanmorris/php-gtk.git
 cd php-gtk/
+npm install
 node .
 ```
 
