@@ -10,11 +10,6 @@ cd php-gtk/
 node .
 ```
 
-## Updating php-wasm
-```bash
-npm run update-php
-```
-
 ## PHP-GTK Browser
 You can run the browser demo
 
