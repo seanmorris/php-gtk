@@ -12,7 +12,7 @@ node .
 ```
 
 ## PHP-GTK Browser
-You can run the browser demo
+You can run the browser demo like so:
 
 ```bash
 node browser.mjs
